@@ -1,5 +1,5 @@
-# 英語リスニングを1日30分、30日間行うとどのような変化が起きるのか？
-
+<!-- # 英語リスニングを1日30分、30日間行うとどのような変化が起きたか？ -->
+# 英語リスニング1日30分で起きた変化
 <!--
 date = "2025-06-20"
 -->
@@ -19,10 +19,11 @@ date = "2025-06-20"
 CEFR（Common European Framework of Reference for Languages：ヨーロッパ言語共通参照枠という国際的な語学能力評価基準で評価してくれる。無料。
 
 ## 結果
-###　学習開始前（2025/06/21）
+### 学習開始前（2025/06/21）
+
 Listeningの結果は正答率75%でB1という結果だった。
 ![学習前のリスニング結果](./noLesson_Listening_testResult.png)
 ### pimsleur level〇 Lesson〇〇まで完了した際の結果()
 
 
-### pimsleur level1 Lesson３0まで完了した際の結果
+### pimsleur level1 Lesson30まで完了した際の結果
