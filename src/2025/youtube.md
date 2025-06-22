@@ -16,7 +16,8 @@ Google AI studioを使用して、Youtube動画から字幕を抜き出して、
 ## やり方
 
 1. まず、Google AI studioで下記のプロンプトを入力し、実行する
-![入力画面](./youtube/googleAIStudio.png)
+![入力画面](./googleAIStudio.png)
+
 ```
 {
 "id": “ここに”Youtubeの一意IDを格納する,
@@ -30,13 +31,13 @@ Google AI studioを使用して、Youtube動画から字幕を抜き出して、
 ```
 
 2. そうすると、このように何秒か考える
-![thinking time](./youtube/thinking.png)
+![thinking time](./thinking.png)
 
 3. その後、json形式で結果が出力される
-![output](./youtube/output.png)
+![output](./output.png)
 
 4. 出力が完了したら、下記のプロンプトを入力し、実行する
-![rank](./youtube/rank.png)
+![rank](./rank.png)
 
 ```
 上記のJSONデータセットについて、原文（"en"キー）と日本語訳（"ja"キー）のペアを評価し、**「意味の乖離度」**が高い順にトップ20のランキングを作成してください。
@@ -61,6 +62,6 @@ Google AI studioを使用して、Youtube動画から字幕を抜き出して、
 ```
 
 5. このような出力が得られるはず 
-![結果](./youtube/result.png)
+![結果](./result.png)
 
 6. タイムスタンプを参考に問題を作成
