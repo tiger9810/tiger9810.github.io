@@ -16,7 +16,7 @@ Google AI studioを使用して、Youtube動画から字幕を抜き出して、
 ## やり方
 
 1. まず、Google AI studioで下記のプロンプトを入力し、実行する
-![入力画面](youtube/googleAIStudio1.png)
+![入力画面](youtube/googleAIStudio.png)
 ```
 {
 "id": “ここに”Youtubeの一意IDを格納する,
