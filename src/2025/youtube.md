@@ -60,3 +60,5 @@ Google AI studioを使用して、Youtube動画から字幕を抜き出して、
 ```
 5. このような出力が得られるはず 
 ![結果](youtube/result.png)
+
+6. タイムスタンプを参考に問題を作成
