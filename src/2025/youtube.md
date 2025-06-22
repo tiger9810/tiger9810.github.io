@@ -19,6 +19,7 @@ Google AI studioを使用して、Youtube動画から字幕を抜き出して、
 ![入力画面](./googleAIStudio.png)
 
 ```
+（ここに字幕を抜き出したいYoutubeのURLを貼り付ける）
 {
 "id": “ここに”Youtubeの一意IDを格納する,
 "timestamp_start": 字幕の開始時間（例"00:08",）
