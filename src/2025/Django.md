@@ -25,10 +25,11 @@ pythonのDjangoを使用してWebサイトを構築する
 
 [クイックインストールガイド](https://docs.djangoproject.com/ja/2.0/intro/install/)を参考にDjangoをインストール
 
+[Djangoロードマップ](https://zenn.dev/suirunakamura/articles/bee05059ea7fad)
 
 
 ### 索引
-[Djangobrothersのチュートリアル](https://djangobrothers.com/tutorials/blog_app/first_app/)
+[Djangobrothersのチュートリアル](https://djangobrothers.com/tutorials/blog_app/first_app/)←これが一番わかりやすかった
 
 - プロジェクト作成
 ```
@@ -297,7 +298,7 @@ def vote(request, question_id):
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
 ```
 
-### urls
+## urls
 urlsファイルでは同じ階層のviews.pyをimportしていて、urlsで対応させたviewsの関数を実行する。urls->viewsの順番。
 ```python
 Django URLs チートシート
@@ -503,7 +504,7 @@ AppConfigは「このアプリの名前は何で、どんな設定で動かす�
    - アプリの場所（pollsフォルダ）
    - マイグレーション対象になる
 ```
-## 構成クラス（AppConfig）の構造
+### 構成クラス（AppConfig）の構造
 ```python
 # polls/apps.py
 from django.apps import AppConfig
@@ -530,7 +531,7 @@ python manage.py sqlmigrate polls 0001
 実際にどんなSQL文を実行するかを表示する
 まだ実行はしない（確認だけ）
 
-
+## クエリセット
 ##### [APIで遊んでみる](https://docs.djangoproject.com/ja/2.0/intro/tutorial02/#playing-with-the-api)
 
 ```
@@ -538,444 +539,372 @@ python manage.py shell
 ```
 manage.pyからpythonシェルの起動
 
-データベースの確認
+```
+Django QuerySet チートシート
 
-Djangoのmanage.pyからシェルを呼び出して、データベースにデータを追加する
+基本的な取得
+==================================================
+全件取得                   → Model.objects.all()
+最初の1件                  → Model.objects.first()
+最後の1件                  → Model.objects.last()
+件数を取得                 → Model.objects.count()
+存在確認                   → Model.objects.exists()
+==================================================
+
+単一オブジェクトの取得
+==================================================
+主キーで取得               → Model.objects.get(pk=1)
+                          → Model.objects.get(id=1)
+条件で取得                 → Model.objects.get(name='Django')
+複数条件                   → Model.objects.get(name='Django', status='active')
+
+# 注意: get()は必ず1件を返す。0件または複数件の場合はエラー
+存在しない場合             → Model.DoesNotExist
+複数存在する場合           → Model.MultipleObjectsReturned
+==================================================
+
+フィルタリング（filter）
+==================================================
+基本フィルタ               → Model.objects.filter(status='published')
+複数条件（AND）            → Model.objects.filter(status='published', author='John')
+チェーン                   → Model.objects.filter(status='published').filter(author='John')
+除外                       → Model.objects.exclude(status='draft')
+filter + exclude          → Model.objects.filter(category='tech').exclude(status='draft')
+==================================================
+
+フィールド検索（Field lookups）
+==================================================
+完全一致                   → filter(name='Django')
+                          → filter(name__exact='Django')
+大文字小文字を無視         → filter(name__iexact='django')
+含む                       → filter(title__contains='Django')
+含む（大文字小文字無視）   → filter(title__icontains='django')
+前方一致                   → filter(name__startswith='Dj')
+後方一致                   → filter(name__endswith='go')
+IN検索                     → filter(id__in=[1, 2, 3])
+                          → filter(status__in=['draft', 'published'])
+==================================================
+
+数値の比較
+==================================================
+より大きい                 → filter(price__gt=100)        # price > 100
+以上                       → filter(price__gte=100)       # price >= 100
+より小さい                 → filter(price__lt=100)        # price < 100
+以下                       → filter(price__lte=100)       # price <= 100
+範囲                       → filter(price__range=(10, 50)) # 10 <= price <= 50
+==================================================
+
+日付の検索
+==================================================
+特定の年                   → filter(created_at__year=2024)
+特定の月                   → filter(created_at__month=12)
+特定の日                   → filter(created_at__day=25)
+日付の範囲                 → filter(created_at__date=date(2024, 12, 25))
+                          → filter(created_at__gte=datetime(2024, 1, 1))
+今日                       → filter(created_at__date=timezone.now().date())
+今週                       → filter(created_at__week=52)
+曜日（1=月曜、7=日曜）    → filter(created_at__week_day=2)  # 月曜日
+==================================================
+
+NULL値の検索
+==================================================
+NULLである                 → filter(description__isnull=True)
+NULLでない                 → filter(description__isnull=False)
+空文字列                   → filter(name__exact='')
+空またはNULL               → filter(Q(name='') | Q(name__isnull=True))
+===============================================
+```
 
 
 
-##### Django Admin
+## Django Admin
 Django adminサイトにアクセスできるアクセスできるユーザーの作成
 ```
 Django Admin チートシート
 
-基本の登録
+必須インポート
 ==================================================
-シンプルな登録             → admin.site.register(Model)
+基本のインポート           → from django.contrib import admin
+                          from .models import Model
 
-カスタマイズして登録       → @admin.register(Model)
+フォーマット用             → from django.utils.html import format_html
+管理コマンド用             → from django.urls import path
+カスタムフォーム用         → from django import forms
+==================================================
+
+基本の登録（最小構成）
+==================================================
+# admin.py
+from django.contrib import admin
+from .models import Post
+
+admin.site.register(Post)
+==================================================
+
+基本の登録パターン
+==================================================
+シンプルな登録             → from django.contrib import admin
+                          from .models import Model
+                          
+                          admin.site.register(Model)
+
+デコレータを使った登録     → from django.contrib import admin
+                          from .models import Model
+                          
+                          @admin.register(Model)
                           class ModelAdmin(admin.ModelAdmin):
                               pass
 
-複数モデル登録             → admin.site.register([Model1, Model2])
+複数モデル一括登録         → from django.contrib import admin
+                          from .models import Model1, Model2, Model3
+                          
+                          admin.site.register([Model1, Model2, Model3])
 ==================================================
 
 リスト表示のカスタマイズ
 ==================================================
-表示フィールド             → list_display = ['name', 'created_at', 'status']
-リンク付きフィールド       → list_display_links = ['name', 'created_at']
-フィルター                 → list_filter = ['status', 'created_at', 'category']
-検索                       → search_fields = ['name', 'description']
-日付階層                   → date_hierarchy = 'created_at'
-ページあたりの表示数       → list_per_page = 50
-編集可能フィールド         → list_editable = ['status', 'price']
-デフォルトの並び順         → ordering = ['-created_at']
-==================================================
+from django.contrib import admin
+from .models import Post
 
-リスト表示の高度な設定
-==================================================
-カスタムカラム             → def colored_status(self, obj):
-                              if obj.status == 'published':
-                                  return format_html('<span style="color: green;">公開</span>')
-                              return obj.status
-                          colored_status.short_description = 'ステータス'
-                          list_display = ['name', 'colored_status']
-
-関連モデルの表示           → list_display = ['name', 'category__name']
-                          list_select_related = ['category']  # N+1問題対策
-
-アクション                 → actions = ['make_published', 'make_draft']
-                          def make_published(self, request, queryset):
-                              queryset.update(status='published')
-                          make_published.short_description = '選択したアイテムを公開'
-==================================================
-
-詳細画面のカスタマイズ
-==================================================
-フィールドセット           → fieldsets = [
-                              (None, {
-                                  'fields': ['name', 'slug']
-                              }),
-                              ('詳細情報', {
-                                  'fields': ['description', 'price'],
-                                  'classes': ['collapse']
-                              }),
-                          ]
-
-表示フィールド指定         → fields = ['name', 'description', 'price']
-除外フィールド             → exclude = ['created_by']
-読み取り専用               → readonly_fields = ['created_at', 'updated_at']
-==================================================
-
-インライン編集
-==================================================
-タブ形式                   → class ItemInline(admin.TabularInline):
-                              model = Item
-                              extra = 1
-
-スタック形式               → class ItemInline(admin.StackedInline):
-                              model = Item
-                              extra = 0
-                              
-インラインの追加           → inlines = [ItemInline]
-==================================================
-
-フォームのカスタマイズ
-==================================================
-カスタムフォーム           → form = MyModelForm
-
-フォームフィールド上書き   → formfield_overrides = {
-                              models.TextField: {'widget': forms.Textarea(attrs={'rows': 4})},
-                          }
-
-動的なフィールド           → def get_form(self, request, obj=None, **kwargs):
-                              form = super().get_form(request, obj, **kwargs)
-                              if not request.user.is_superuser:
-                                  form.base_fields['status'].disabled = True
-                              return form
-==================================================
-
-権限とフィルタリング
-==================================================
-閲覧権限                   → def has_view_permission(self, request, obj=None):
-                              return request.user.is_staff
-
-追加権限                   → def has_add_permission(self, request):
-                              return request.user.is_superuser
-
-変更権限                   → def has_change_permission(self, request, obj=None):
-                              if obj and obj.created_by != request.user:
-                                  return False
-                              return True
-
-削除権限                   → def has_delete_permission(self, request, obj=None):
-                              return False  # 削除を禁止
-
-クエリセット制限           → def get_queryset(self, request):
-                              qs = super().get_queryset(request)
-                              if request.user.is_superuser:
-                                  return qs
-                              return qs.filter(created_by=request.user)
-==================================================
-
-保存時の処理
-==================================================
-保存前の処理               → def save_model(self, request, obj, form, change):
-                              if not change:  # 新規作成時
-                                  obj.created_by = request.user
-                              obj.updated_by = request.user
-                              super().save_model(request, obj, form, change)
-
-フォーム保存時             → def save_form(self, request, form, change):
-                              obj = form.save(commit=False)
-                              # カスタム処理
-                              return obj
-==================================================
-
-表示のカスタマイズ
-==================================================
-管理画面のタイトル         → admin.site.site_header = 'My Admin'
-                          admin.site.site_title = 'My Admin Portal'
-                          admin.site.index_title = 'Welcome to My Admin'
-
-モデル名の変更             → class Meta:
-                              verbose_name = '記事'
-                              verbose_name_plural = '記事一覧'
-
-空の値の表示               → empty_value_display = '-'
-==================================================
-
-よく使うパターン（完全な例）
-==================================================
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-   # リスト表示
-   list_display = ['title', 'author', 'status', 'created_at']
+   list_display = ['title', 'author', 'created_at', 'status']
    list_filter = ['status', 'created_at', 'author']
    search_fields = ['title', 'content']
    date_hierarchy = 'created_at'
    ordering = ['-created_at']
+   list_per_page = 50
+   list_editable = ['status']
+
+admin.site.register(Post, PostAdmin)
+==================================================
+
+カスタムカラムの追加
+==================================================
+from django.contrib import admin
+from django.utils.html import format_html
+from .models import Post
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+   list_display = ['title', 'colored_status', 'view_count']
    
-   # 詳細画面
+   def colored_status(self, obj):
+       colors = {
+           'draft': 'gray',
+           'published': 'green',
+           'archived': 'red'
+       }
+       return format_html(
+           '<span style="color: {};">{}</span>',
+           colors.get(obj.status, 'black'),
+           obj.get_status_display()
+       )
+   colored_status.short_description = 'ステータス'
+==================================================
+
+インライン編集の設定
+==================================================
+from django.contrib import admin
+from .models import Post, Comment, Tag
+
+class CommentInline(admin.TabularInline):
+   model = Comment
+   extra = 1
+
+class TagInline(admin.StackedInline):
+   model = Tag
+   extra = 0
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+   inlines = [CommentInline, TagInline]
+==================================================
+
+アクションの追加
+==================================================
+from django.contrib import admin
+from django.contrib import messages
+from .models import Post
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+   actions = ['make_published', 'make_draft']
+   
+   def make_published(self, request, queryset):
+       updated = queryset.update(status='published')
+       messages.success(request, f'{updated}件の記事を公開しました。')
+   make_published.short_description = '選択した記事を公開'
+   
+   def make_draft(self, request, queryset):
+       updated = queryset.update(status='draft')
+       messages.info(request, f'{updated}件の記事を下書きに戻しました。')
+   make_draft.short_description = '選択した記事を下書きに戻す'
+==================================================
+
+詳細画面のカスタマイズ
+==================================================
+from django.contrib import admin
+from .models import Post
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
    fieldsets = [
        (None, {
            'fields': ['title', 'slug', 'author']
        }),
        ('コンテンツ', {
-           'fields': ['content', 'excerpt']
+           'fields': ['content', 'excerpt'],
+           'classes': ['wide']
        }),
        ('公開設定', {
            'fields': ['status', 'published_at'],
            'classes': ['collapse']
        }),
+       ('メタ情報', {
+           'fields': ['created_at', 'updated_at'],
+           'classes': ['collapse'],
+           'description': 'システムが自動的に管理する情報'
+       }),
+   ]
+   readonly_fields = ['created_at', 'updated_at']
+   prepopulated_fields = {'slug': ('title',)}
+==================================================
+
+カスタムフォームの使用
+==================================================
+from django.contrib import admin
+from django import forms
+from .models import Post
+
+class PostAdminForm(forms.ModelForm):
+   class Meta:
+       model = Post
+       fields = '__all__'
+       widgets = {
+           'content': forms.Textarea(attrs={'rows': 20, 'cols': 80}),
+           'excerpt': forms.Textarea(attrs={'rows': 3}),
+       }
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+   form = PostAdminForm
+==================================================
+
+権限の制御
+==================================================
+from django.contrib import admin
+from .models import Post
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+   def get_queryset(self, request):
+       qs = super().get_queryset(request)
+       if request.user.is_superuser:
+           return qs
+       return qs.filter(author=request.user)
+   
+   def save_model(self, request, obj, form, change):
+       if not change:  # 新規作成時
+           obj.author = request.user
+       super().save_model(request, obj, form, change)
+   
+   def has_delete_permission(self, request, obj=None):
+       if obj and obj.author != request.user:
+           return False
+       return super().has_delete_permission(request, obj)
+==================================================
+
+管理サイトのカスタマイズ
+==================================================
+# admin.py の最後に追加
+admin.site.site_header = 'My Project 管理画面'
+admin.site.site_title = 'My Project Admin'
+admin.site.index_title = 'サイト管理'
+==================================================
+
+完全な例（ブログ投稿）
+==================================================
+from django.contrib import admin
+from django.utils.html import format_html
+from django.urls import reverse
+from django.contrib import messages
+from .models import Post, Category, Tag, Comment
+
+# インライン
+class CommentInline(admin.TabularInline):
+   model = Comment
+   extra = 0
+   fields = ['author', 'content', 'is_approved']
+   readonly_fields = ['created_at']
+
+# カテゴリ管理
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+   list_display = ['name', 'slug', 'post_count']
+   prepopulated_fields = {'slug': ('name',)}
+   
+   def post_count(self, obj):
+       return obj.posts.count()
+   post_count.short_description = '記事数'
+
+# 投稿管理
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+   # リスト表示
+   list_display = ['title', 'author', 'category', 'status_colored', 'created_at']
+   list_filter = ['status', 'category', 'created_at']
+   search_fields = ['title', 'content']
+   date_hierarchy = 'created_at'
+   ordering = ['-created_at']
+   list_per_page = 20
+   
+   # 詳細画面
+   fieldsets = [
+       (None, {
+           'fields': ['title', 'slug', 'author', 'category']
+       }),
+       ('コンテンツ', {
+           'fields': ['content', 'excerpt'],
+           'classes': ['wide']
+       }),
+       ('公開設定', {
+           'fields': ['status', 'published_at', 'tags'],
+           'classes': ['collapse']
+       }),
    ]
    
-   # 自動入力
    prepopulated_fields = {'slug': ('title',)}
-   
-   # 読み取り専用
    readonly_fields = ['created_at', 'updated_at']
+   filter_horizontal = ['tags']
+   inlines = [CommentInline]
    
-   # インライン
-   inlines = [CommentInline, AttachmentInline]
+   # カスタムメソッド
+   def status_colored(self, obj):
+       colors = {
+           'draft': '#999999',
+           'published': '#008000',
+           'archived': '#ff0000'
+       }
+       return format_html(
+           '<span style="color: {}; font-weight: bold;">{}</span>',
+           colors.get(obj.status, '#000000'),
+           obj.get_status_display()
+       )
+   status_colored.short_description = 'ステータス'
    
    # アクション
-   actions = ['make_published', 'make_draft']
+   actions = ['make_published']
    
    def make_published(self, request, queryset):
-       count = queryset.update(status='published')
-       self.message_user(request, f'{count}件の記事を公開しました。')
+       updated = queryset.update(status='published')
+       messages.success(request, f'{updated}件の記事を公開しました。')
    make_published.short_description = '選択した記事を公開'
-==================================================
 
-高度な機能
-==================================================
-カスタムビュー追加         → def get_urls(self):
-                              urls = super().get_urls()
-                              custom_urls = [
-                                  path('stats/', self.stats_view, name='post_stats'),
-                              ]
-                              return custom_urls + urls
-
-一括フィールド変更         → def changelist_view(self, request, extra_context=None):
-                              extra_context = extra_context or {}
-                              extra_context['custom_var'] = 'value'
-                              return super().changelist_view(request, extra_context)
-
-メディアファイル追加       → class Media:
-                              css = {
-                                  'all': ('admin/css/custom.css',)
-                              }
-                              js = ('admin/js/custom.js',)
-==================================================
-```
-
-
-##### テンプレート
-ユーザーがurlにアクセスして、index.htmlが表示されるまでの流れ
-```
-【1. ユーザーがURLにアクセス】
-ブラウザ: http://localhost:8000/polls/5/
-                                    ↓
-
-【2. Djangoがリクエストを受信】
-Django: "GET /polls/5/ というリクエストが来た"
-                                    ↓
-
-【3. メインのURLconf確認】
-mysite/urls.py:
-    path('polls/', include('polls.urls'))  ← /polls/で始まる！
-                                    ↓
-
-【4. アプリのURLconf確認】
-polls/urls.py:
-    path('<int:question_id>/', views.detail, name='detail')
-    ← パターンマッチ！question_id=5
-                                    ↓
-
-【5. View関数の呼び出し】
-polls/views.py:
-    def detail(request, question_id=5):
-        question = get_object_or_404(Question, pk=5)
-        return render(request, 'polls/detail.html', {'question': question})
-                                    ↓
-
-【6. データベースアクセス】
-Question.objects.get(pk=5) → 質問データ取得
-                                    ↓
-
-【7. テンプレートの読み込み】
-polls/templates/polls/detail.html を探す
-                                    ↓
-
-【8. テンプレートのレンダリング】
-<h1>{{ question.question_text }}</h1>  ← データを埋め込みurls.pyで定義した名前を元に参照している
-↓
-<h1>好きな色は？</h1>  ← 実際のHTMLに変換
-                                    ↓
-
-【9. HTTPレスポンス返却】
-Django → ブラウザ: HTMLデータを送信
-                                    ↓
-
-【10. ブラウザが表示】
-ユーザーに質問詳細ページが表示される
-```
-##### テンプレート構文
-Djangoテンプレート構文の基本
-```python 
-Django Template チートシート
-
-基本構文
-==================================================
-変数                       → {{ variable }}
-変数のプロパティ           → {{ object.property }}
-リストのインデックス       → {{ list.0 }}
-辞書のキー                 → {{ dict.key }}
-タグ                       → {% tag %}
-コメント                   → {# コメント #}
-複数行コメント             → {% comment %} ... {% endcomment %}
-==================================================
-
-テンプレート継承
-==================================================
-ベーステンプレート定義     → {% block content %}
-                          {% endblock %}
-
-テンプレート継承           → {% extends "base.html" %}
-
-ブロックの上書き           → {% block content %}
-                             新しい内容
-                          {% endblock %}
-
-親のブロックを含める       → {% block content %}
-                             {{ block.super }}
-                             追加内容
-                          {% endblock %}
-==================================================
-
-変数の表示
-==================================================
-デフォルト値               → {{ variable|default:"デフォルト" }}
-空の場合のデフォルト       → {{ variable|default_if_none:"なし" }}
-HTMLエスケープなし         → {{ variable|safe }}
-改行をbrタグに             → {{ text|linebreaks }}
-URLを自動リンク            → {{ text|urlize }}
-==================================================
-
-条件分岐
-==================================================
-if文                       → {% if condition %}
-                          {% elif other_condition %}
-                          {% else %}
-                          {% endif %}
-
-存在チェック               → {% if variable %}
-比較                       → {% if value > 10 %}
-論理演算                   → {% if user.is_authenticated and perms.app.add_model %}
-否定                       → {% if not variable %}
-==================================================
-
-ループ
-==================================================
-基本のループ               → {% for item in items %}
-                             {{ item }}
-                          {% endfor %}
-
-空の場合                   → {% for item in items %}
-                             {{ item }}
-                          {% empty %}
-                             アイテムがありません
-                          {% endfor %}
-
-ループカウンタ             → {{ forloop.counter }}      # 1から
-                          → {{ forloop.counter0 }}     # 0から
-                          → {{ forloop.first }}        # 最初
-                          → {{ forloop.last }}         # 最後
-==================================================
-
-URL生成
-==================================================
-名前付きURL                → {% url 'view_name' %}
-パラメータ付き             → {% url 'view_name' pk=object.pk %}
-名前空間付き               → {% url 'app:view_name' %}
-変数として保存             → {% url 'view_name' as the_url %}
-==================================================
-
-静的ファイル
-==================================================
-静的ファイル読み込み       → {% load static %}
-                          <link href="{% static 'css/style.css' %}" rel="stylesheet">
-                          <script src="{% static 'js/script.js' %}"></script>
-                          <img src="{% static 'images/logo.png' %}">
-
-メディアファイル           → <img src="{{ object.image.url }}">
-==================================================
-
-フォーム
-==================================================
-CSRFトークン               → {% csrf_token %}
-
-フォーム全体               → {{ form }}
-                          {{ form.as_p }}
-                          {{ form.as_table }}
-                          {{ form.as_ul }}
-
-個別フィールド             → {{ form.field_name }}
-                          {{ form.field_name.label }}
-                          {{ form.field_name.errors }}
-                          {{ form.field_name.help_text }}
-
-フォームエラー             → {{ form.non_field_errors }}
-==================================================
-
-フィルター（よく使うもの）
-==================================================
-文字数制限                 → {{ text|truncatechars:20 }}
-単語数制限                 → {{ text|truncatewords:10 }}
-小文字/大文字              → {{ text|lower }} / {{ text|upper }}
-最初を大文字               → {{ text|title }}
-日付フォーマット           → {{ date|date:"Y年m月d日" }}
-時刻フォーマット           → {{ time|time:"H:i" }}
-数値カンマ区切り           → {{ number|floatformat:2 }}
-ファイルサイズ             → {{ bytes|filesizeformat }}
-リストの長さ               → {{ list|length }}
-最初/最後の要素            → {{ list|first }} / {{ list|last }}
-結合                       → {{ list|join:", " }}
-==================================================
-
-インクルード
-==================================================
-他のテンプレート読み込み   → {% include "partial.html" %}
-変数付き                   → {% include "partial.html" with variable=value %}
-コンテキスト制限           → {% include "partial.html" only %}
-==================================================
-
-便利なタグ
-==================================================
-現在時刻                   → {% now "Y年m月d日 H:i" %}
-Lorem ipsum                → {% lorem %}
-デバッグ情報               → {% debug %}
-改行を無視                 → {% spaceless %} ... {% endspaceless %}
-自動エスケープ無効         → {% autoescape off %} ... {% endautoescape %}
-==================================================
-
-カスタムタグ・フィルター読み込み
-==================================================
-カスタムタグ読み込み       → {% load my_tags %}
-複数読み込み               → {% load my_tags my_filters %}
-==================================================
-
-テンプレート内での変数定義
-==================================================
-変数の定義                 → {% with total=items|length %}
-                             合計: {{ total }}
-                          {% endwith %}
-
-複数変数                   → {% with a=1 b=2 c=3 %}
-                             {{ a }} + {{ b }} + {{ c }}
-                          {% endwith %}
-==================================================
-
-よく使うパターン
-==================================================
-ページネーション           → {% if page.has_previous %}
-                             <a href="?page={{ page.previous_page_number }}">前へ</a>
-                          {% endif %}
-                          
-                          ページ {{ page.number }} / {{ page.paginator.num_pages }}
-                          
-                          {% if page.has_next %}
-                             <a href="?page={{ page.next_page_number }}">次へ</a>
-                          {% endif %}
-
-フラッシュメッセージ       → {% if messages %}
-                             {% for message in messages %}
-                               <div class="alert alert-{{ message.tags }}">
-                                 {{ message }}
-                               </div>
-                             {% endfor %}
-                          {% endif %}
+# 管理サイトのカスタマイズ
+admin.site.site_header = 'ブログ管理システム'
+admin.site.site_title = 'ブログ管理'
+admin.site.index_title = 'ダッシュボード'
 ==================================================
 ```
 
