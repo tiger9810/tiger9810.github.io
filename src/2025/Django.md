@@ -31,6 +31,19 @@ pythonのDjangoを使用してWebサイトを構築する
 ### 索引
 [Djangobrothersのチュートリアル](https://djangobrothers.com/tutorials/blog_app/first_app/)←これが一番わかりやすかった
 
+
+### memo
+
+バージョン確認
+``` zsh
+python -m django --version
+```
+
+mysiteという[プロジェクトを作成](https://docs.djangoproject.com/ja/2.0/intro/tutorial01/#creating-a-project)
+```zsh
+django-admin startproject mysite
+```
+
 - プロジェクト作成
 ```
 django-admin startproject project_name
@@ -52,24 +65,6 @@ django-admin startproject project_name
 - [Bootstrapの導入](https://qiita.com/kaki_k/items/6e17597804437ef170ae#bootstrap%E3%81%AE%E5%B0%8E%E5%85%A5)
 - CRUDの作成
 
-
-### memo
-
-バージョン確認
-``` zsh
-python -m django --version
-```
-
-mysiteという[プロジェクトを作成](https://docs.djangoproject.com/ja/2.0/intro/tutorial01/#creating-a-project)
-```zsh
-django-admin startproject mysite
-```
-
-アプリケーションを作成する
-アプリケーションを作るには、 manage.py と同じディレクトリに入って、このコマンドを実行
-```
-python manage.py startapp applicationNmae
-```
 
 作成したprojectの構成
 ``` python
@@ -114,27 +109,51 @@ Django Views チートシート
 
 関数ベースビュー（FBV）
 ==================================================
+from .models import Post
 基本のビュー               → def index(request):
-                              return render(request, 'index.html')
+                             return render(request, 'index.html')
 
-コンテキスト付き           → def post_list(request):
-                              posts = Post.objects.all()
-                              return render(request, 'posts.html', {'posts': posts})
+クエリセットを渡す         → def post_list(request):
+                             posts = Post.objects.all()
+                             return render(request, 'posts.html', {'posts': posts})
+                             # テンプレートでは {{ posts }} で使用可能
 
 パラメータ受け取り         → def post_detail(request, pk):
-                              post = get_object_or_404(Post, pk=pk)
-                              return render(request, 'detail.html', {'post': post})
+                             post = get_object_or_404(Post, pk=pk)
+                             return render(request, 'detail.html', {'post': post})
+==================================================
+
+クエリセットの渡し方
+==================================================
+基本パターン               → def view_name(request):
+                             queryset = Model.objects.all()
+                             return render(request, 'template.html', {'変数名': queryset})
+                             # テンプレートで {{ 変数名 }} として使用
+
+複数のクエリセット         → def dashboard(request):
+                             posts = Post.objects.all()
+                             users = User.objects.all()
+                             return render(request, 'dashboard.html', {
+                                 'posts': posts,
+                                 'users': users
+                             })
+                             # テンプレートで {{ posts }} と {{ users }} が使用可能
+
+フィルター済みを渡す       → def published_posts(request):
+                             posts = Post.objects.filter(status='published')
+                             return render(request, 'posts.html', {'posts': posts})
+                             # テンプレートで {{ posts }} はpublishedのみ
 ==================================================
 
 HTTPメソッドの処理
 ==================================================
 GETとPOSTの分岐            → if request.method == 'POST':
-                              # フォーム処理
-                           else:
-                              # 表示処理
+                             # フォーム処理
+                          else:
+                             # 表示処理
 
 POSTのみ許可               → @require_POST
-                           def delete_view(request):
+                          def delete_view(request):
 
 特定メソッドのみ           → @require_http_methods(['GET', 'POST'])
 ==================================================
@@ -143,55 +162,56 @@ POSTのみ許可               → @require_POST
 ==================================================
 HTMLを返す                 → return render(request, 'template.html', context)
 リダイレクト               → return redirect('app:view_name')
-                           → return redirect('/some/url/')
+                          → return redirect('/some/url/')
 404エラー                  → raise Http404("メッセージ")
-                           → get_object_or_404(Model, pk=pk)
+                          → get_object_or_404(Model, pk=pk)
 JSONを返す                 → return JsonResponse({'key': 'value'})
 ==================================================
 
 フォーム処理の基本パターン
 ==================================================
 def create_view(request):
-    if request.method == 'POST':
-        form = MyForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('success')
-    else:
-        form = MyForm()
-    return render(request, 'form.html', {'form': form})
+   if request.method == 'POST':
+       form = MyForm(request.POST)
+       if form.is_valid():
+           form.save()
+           return redirect('success')
+   else:
+       form = MyForm()
+   return render(request, 'form.html', {'form': form})
 ==================================================
 
 クラスベースビュー（CBV）
 ==================================================
 一覧表示                   → class PostListView(ListView):
-                              model = Post
-                              template_name = 'post_list.html'
-                              context_object_name = 'posts'
+                             model = Post
+                             template_name = 'post_list.html'
+                             context_object_name = 'posts'  # テンプレートで使う変数名
 
 詳細表示                   → class PostDetailView(DetailView):
-                              model = Post
-                              template_name = 'post_detail.html'
+                             model = Post
+                             template_name = 'post_detail.html'
+                             # デフォルトでは {{ post }} として使用可能
 
 作成                       → class PostCreateView(CreateView):
-                              model = Post
-                              fields = ['title', 'content']
-                              success_url = reverse_lazy('post_list')
+                             model = Post
+                             fields = ['title', 'content']
+                             success_url = reverse_lazy('post_list')
 
 更新                       → class PostUpdateView(UpdateView):
-                              model = Post
-                              fields = ['title', 'content']
-                              success_url = reverse_lazy('post_list')
+                             model = Post
+                             fields = ['title', 'content']
+                             success_url = reverse_lazy('post_list')
 
 削除                       → class PostDeleteView(DeleteView):
-                              model = Post
-                              success_url = reverse_lazy('post_list')
+                             model = Post
+                             success_url = reverse_lazy('post_list')
 ==================================================
 
 デコレータ
 ==================================================
 ログイン必須               → @login_required
-                           def my_view(request):
+                          def my_view(request):
 
 権限チェック               → @permission_required('app.add_post')
 キャッシュ                 → @cache_page(60 * 15)
@@ -203,8 +223,8 @@ CSRF除外                   → @csrf_exempt
 404取得                    → post = get_object_or_404(Post, pk=pk)
 リスト404                  → posts = get_list_or_404(Post, published=True)
 ページネーション           → from django.core.paginator import Paginator
-                           paginator = Paginator(queryset, 10)
-                           page = paginator.get_page(request.GET.get('page'))
+                          paginator = Paginator(queryset, 10)
+                          page = paginator.get_page(request.GET.get('page'))
 ==================================================
 
 リクエストオブジェクト
@@ -216,6 +236,30 @@ POSTデータ                 → request.POST.get('field_name')
 メソッド                   → request.method
 パス                       → request.path
 Ajax判定                   → request.is_ajax()
+==================================================
+
+実践例：クエリセットを活用したビュー
+==================================================
+def blog_index(request):
+   # 複数のクエリセットを準備
+   recent_posts = Post.objects.filter(status='published').order_by('-created_at')[:5]
+   popular_posts = Post.objects.filter(status='published').order_by('-view_count')[:5]
+   categories = Category.objects.annotate(post_count=Count('post'))
+   
+   # テンプレートに渡す
+   context = {
+       'recent_posts': recent_posts,      # {{ recent_posts }} で使用
+       'popular_posts': popular_posts,    # {{ popular_posts }} で使用
+       'categories': categories,          # {{ categories }} で使用
+       'total_posts': Post.objects.count()  # {{ total_posts }} で使用
+   }
+   
+   return render(request, 'blog/index.html', context)
+
+# テンプレート側では：
+# {% for post in recent_posts %}
+#     {{ post.title }}
+# {% endfor %}
 ==================================================
 ```
 views.py の仕事  
@@ -928,6 +972,340 @@ return Question.objects.order_by('-pub_date')[:5]
 Question.objects → 何を取得？
 .order_by('-pub_date') → どう並べる？
 [:5] → どれだけ取得？
+
+## テンプレート
+```
+Django テンプレートタグ チートシート
+
+基本的な書き方
+==================================================
+変数の表示                 → {{ variable }}
+タグの使用                 → {% tag %}
+フィルターの適用           → {{ variable|filter }}
+コメント                   → {# コメント #}
+
+3種類の記法：
+{{ }}  → 変数や式を表示
+{% %}  → タグ（制御構造など）
+{# #}  → コメント
+==================================================
+
+基本的な使い方の例
+==================================================
+<!-- 変数の表示 -->
+<h1>{{ title }}</h1>
+<p>{{ user.username }}さん、こんにちは</p>
+
+<!-- タグの使用 -->
+{% if user.is_authenticated %}
+   ログイン済み
+{% endif %}
+
+<!-- フィルターの適用 -->
+<p>{{ text|truncatewords:10 }}</p>
+<p>{{ price|floatformat:2 }}円</p>
+
+<!-- コメント -->
+{# TODO: ここに説明を追加 #}
+==================================================
+
+URL逆引き
+==================================================
+【テンプレートタグ → 実際のURL】
+{% url 'blogs:index' %}
+→ /blogs/
+
+{% url 'blogs:detail' blog_id=1 %}
+→ /blogs/1/
+
+{% url 'blogs:detail' blog_id=blog.id %}
+→ /blogs/42/  （blog.idが42の場合）
+
+{% url 'blogs:edit' blog_id=blog.id %}
+→ /blogs/42/edit/
+
+{% url 'blogs:create' %}
+→ /blogs/create/
+
+{% url 'blogs:tag' tag_slug='django' %}
+→ /blogs/tag/django/
+
+基本のURL                  → {% url 'view_name' %}
+パラメータ付き             → {% url 'view_name' pk=object.pk %}
+                          → {% url 'view_name' id=1 %}
+複数パラメータ             → {% url 'view_name' year=2024 month=12 %}
+名前空間付き               → {% url 'app_name:view_name' %}
+                          → {% url 'blogs:detail' blog_id=blog.id %}
+位置引数                   → {% url 'view_name' arg1 arg2 %}
+                          → {% url 'blog:archive' 2024 12 %}
+変数として保存             → {% url 'view_name' pk=object.pk as the_url %}
+                          → <a href="{{ the_url }}">リンク</a>
+==================================================
+
+テンプレート変数の展開
+==================================================
+変数                       → {{ variable }}
+プロパティアクセス         → {{ object.property }}
+                          → {{ user.username }}
+メソッド呼び出し           → {{ object.get_absolute_url }}
+                          → {{ user.get_full_name }}
+辞書のキー                 → {{ dict.key }}
+                          → {{ data.title }}
+リストのインデックス       → {{ list.0 }}
+                          → {{ items.1 }}
+ネストしたアクセス         → {{ blog.author.profile.bio }}
+==================================================
+
+フィルター
+==================================================
+デフォルト値               → {{ value|default:"デフォルト値" }}
+                          → {{ title|default:"無題" }}
+空の場合のデフォルト       → {{ value|default_if_none:"N/A" }}
+長さ/件数                  → {{ items|length }}
+                          → {{ queryset|length }}
+最初/最後                  → {{ list|first }}
+                          → {{ list|last }}
+大文字/小文字              → {{ name|upper }}
+                          → {{ name|lower }}
+                          → {{ title|title }}
+文字数制限                 → {{ text|truncatechars:30 }}
+単語数制限                 → {{ text|truncatewords:10 }}
+改行をbrタグに             → {{ text|linebreaks }}
+                          → {{ text|linebreaksbr }}
+HTMLエスケープ             → {{ html|escape }}
+HTMLエスケープ解除         → {{ html|safe }}
+日付フォーマット           → {{ date|date:"Y年m月d日" }}
+                          → {{ datetime|date:"Y-m-d H:i:s" }}
+結合                       → {{ list|join:", " }}
+                          → {{ tags|join:" / " }}
+==================================================
+
+条件分岐タグ
+==================================================
+基本のif文                 → {% if condition %}
+                             内容
+                          {% endif %}
+
+if-else                    → {% if user.is_authenticated %}
+                             ログイン中
+                          {% else %}
+                             未ログイン
+                          {% endif %}
+
+if-elif-else              → {% if value > 100 %}
+                             高い
+                          {% elif value > 50 %}
+                             普通
+                          {% else %}
+                             安い
+                          {% endif %}
+
+and/or条件                 → {% if user.is_authenticated and user.is_staff %}
+                          → {% if value > 0 or override %}
+
+not条件                    → {% if not user.is_authenticated %}
+                          → {% if value not in list %}
+
+in演算子                   → {% if item in list %}
+                          → {% if "django" in title|lower %}
+==================================================
+
+ループタグ
+==================================================
+基本のfor文                → {% for item in items %}
+                             {{ item }}
+                          {% endfor %}
+
+インデックス付き           → {% for item in items %}
+                             {{ forloop.counter }}: {{ item }}
+                          {% endfor %}
+
+空の場合の処理             → {% for item in items %}
+                             {{ item }}
+                          {% empty %}
+                             アイテムがありません
+                          {% endfor %}
+
+辞書のループ               → {% for key, value in dict.items %}
+                             {{ key }}: {{ value }}
+                          {% endfor %}
+
+逆順ループ                 → {% for item in items reversed %}
+                             {{ item }}
+                          {% endfor %}
+==================================================
+
+forループ変数
+==================================================
+1から始まるカウンタ        → {{ forloop.counter }}
+0から始まるカウンタ        → {{ forloop.counter0 }}
+残り回数（1から）          → {{ forloop.revcounter }}
+残り回数（0から）          → {{ forloop.revcounter0 }}
+最初の要素か               → {% if forloop.first %}
+最後の要素か               → {% if forloop.last %}
+親ループのカウンタ         → {{ forloop.parentloop.counter }}
+==================================================
+
+静的ファイル
+==================================================
+静的ファイル読み込み       → {% load static %}
+
+CSS読み込み                → <link rel="stylesheet" href="{% static 'css/style.css' %}">
+JavaScript読み込み         → <script src="{% static 'js/script.js' %}"></script>
+画像読み込み               → <img src="{% static 'images/logo.png' %}" alt="Logo">
+
+メディアファイル           → <img src="{{ user.avatar.url }}" alt="Avatar">
+                          → <a href="{{ document.file.url }}">ダウンロード</a>
+==================================================
+
+テンプレート継承
+==================================================
+親テンプレート定義         → {% block content %}
+                             デフォルトコンテンツ
+                          {% endblock %}
+                          
+                          {% block title %}サイト名{% endblock %}
+
+子テンプレートで継承       → {% extends "base.html" %}
+
+ブロックの上書き           → {% block content %}
+                             新しいコンテンツ
+                          {% endblock %}
+
+親のコンテンツを含める     → {% block content %}
+                             {{ block.super }}
+                             追加コンテンツ
+                          {% endblock %}
+==================================================
+
+インクルード
+==================================================
+部分テンプレート読み込み   → {% include "partials/header.html" %}
+
+変数を渡す                 → {% include "partials/card.html" with title="タイトル" %}
+                          → {% include "item.html" with item=product %}
+
+コンテキストを制限         → {% include "partial.html" with title="タイトル" only %}
+==================================================
+
+CSRF保護
+==================================================
+フォーム内に必須           → <form method="post">
+                             {% csrf_token %}
+                             <!-- フォーム要素 -->
+                          </form>
+==================================================
+
+コメント
+==================================================
+単一行コメント             → {# これはコメントです #}
+
+複数行コメント             → {% comment %}
+                             これは
+                             複数行の
+                             コメントです
+                          {% endcomment %}
+==================================================
+
+変数の定義
+==================================================
+変数の定義                 → {% with total=items|length %}
+                             合計: {{ total }}個
+                          {% endwith %}
+
+複数変数の定義             → {% with price=100 tax=0.1 %}
+                             税込: {{ price|add:price|floatformat:0 }}円
+                          {% endwith %}
+
+as句での定義               → {% url 'detail' pk=1 as detail_url %}
+                          → {% get_current_language as LANGUAGE_CODE %}
+==================================================
+
+よく使うパターン
+==================================================
+ログイン状態で分岐         → {% if user.is_authenticated %}
+                             こんにちは、{{ user.username }}さん
+                             <a href="{% url 'logout' %}">ログアウト</a>
+                          {% else %}
+                             <a href="{% url 'login' %}">ログイン</a>
+                          {% endif %}
+
+権限チェック               → {% if perms.app_label.add_model %}
+                             <a href="{% url 'model_add' %}">追加</a>
+                          {% endif %}
+
+現在のURLをチェック        → {% if request.resolver_match.url_name == 'home' %}
+                             class="active"
+                          {% endif %}
+
+フラッシュメッセージ       → {% if messages %}
+                             {% for message in messages %}
+                               <div class="alert alert-{{ message.tags }}">
+                                 {{ message }}
+                               </div>
+                             {% endfor %}
+                          {% endif %}
+
+ページネーション           → {% if page_obj.has_previous %}
+                             <a href="?page={{ page_obj.previous_page_number }}">前へ</a>
+                          {% endif %}
+                          
+                          ページ {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                          
+                          {% if page_obj.has_next %}
+                             <a href="?page={{ page_obj.next_page_number }}">次へ</a>
+                          {% endif %}
+==================================================
+
+カスタムタグ・フィルタ
+==================================================
+読み込み                   → {% load custom_tags %}
+                          → {% load humanize %}
+                          → {% load i18n %}
+
+複数読み込み               → {% load static custom_tags humanize %}
+==================================================
+
+実践例：ブログ詳細ページ
+==================================================
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ blog.title }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<article>
+   <h1>{{ blog.title }}</h1>
+   <p class="meta">
+       投稿者: {{ blog.author.get_full_name|default:blog.author.username }}
+       | {{ blog.created_at|date:"Y年m月d日 H:i" }}
+   </p>
+   
+   {% if blog.thumbnail %}
+       <img src="{{ blog.thumbnail.url }}" alt="{{ blog.title }}">
+   {% endif %}
+   
+   <div class="content">
+       {{ blog.content|linebreaks }}
+   </div>
+   
+   <div class="tags">
+       {% for tag in blog.tags.all %}
+           <a href="{% url 'blogs:tag' tag_slug=tag.slug %}">#{{ tag.name }}</a>
+           {% if not forloop.last %}, {% endif %}
+       {% endfor %}
+   </div>
+   
+   {% if user.is_authenticated and user == blog.author %}
+       <div class="actions">
+           <a href="{% url 'blogs:edit' blog_id=blog.id %}" class="btn">編集</a>
+           <a href="{% url 'blogs:delete' blog_id=blog.id %}" class="btn btn-danger">削除</a>
+       </div>
+   {% endif %}
+</article>
+{% endblock %}
+==================================================
+```
 
 ###### objectsはカラム（フィールド）ではない
 
