@@ -7,30 +7,25 @@ date = "2025-06-22"
 
 ### 使ったもの
 
-- Claude AI
+[Django学習のロードマップ](https://qiita.com/nossey/items/03e114a7b728a8b2ae55)
 
+[クイックインストールガイド](https://docs.djangoproject.com/ja/2.0/intro/install/)
+
+[Djangoロードマップ](https://zenn.dev/suirunakamura/articles/bee05059ea7fad)
+
+[Djangobrothersのチュートリアル](https://djangobrothers.com/tutorials/blog_app/first_app/)←これが一番わかりやすかった
+
+[Django ウェブフレームワーク (Python)(MDN)](https://developer.mozilla.org/ja/docs/Learn_web_development/Extensions/Server-side/Django)
+
+[Django最速マスター](https://qiita.com/gragragrao/items/373057783ba8856124f3#%E4%BD%95%E3%82%92%E4%BD%9C%E3%82%8B%E3%81%AE)
+
+[Djangoの学習ロードマップ](https://akiyoko.hatenablog.jp/entry/2018/12/01/133427)
 ### やりたいこと
 
 pythonのDjangoを使用してWebサイトを構築する
 
-### なぜやるのか
-
-プログラミング学習
 
 ## Djangoについて
-
-### 学習の流れ
-
-[Django学習のロードマップ](https://qiita.com/nossey/items/03e114a7b728a8b2ae55)のロードマップに従う
-
-[クイックインストールガイド](https://docs.djangoproject.com/ja/2.0/intro/install/)を参考にDjangoをインストール
-
-[Djangoロードマップ](https://zenn.dev/suirunakamura/articles/bee05059ea7fad)
-
-
-### 索引
-[Djangobrothersのチュートリアル](https://djangobrothers.com/tutorials/blog_app/first_app/)←これが一番わかりやすかった
-
 
 ### memo
 
@@ -39,23 +34,19 @@ pythonのDjangoを使用してWebサイトを構築する
 python -m django --version
 ```
 
-mysiteという[プロジェクトを作成](https://docs.djangoproject.com/ja/2.0/intro/tutorial01/#creating-a-project)
-```zsh
-django-admin startproject mysite
-```
-
 - プロジェクト作成
 ```
 django-admin startproject project_name
 ```
-
-- タイムゾーンと言語の変更
-- マイグレーション
-- スーパーユーザー設定
+##### 基本設定
+- タイムゾーンと言語の変更`settings.py`
+- マイグレーション`python manage.py migrate`
+- スーパーユーザー設定`python manage.py createsuperuser`
 - 開発用サーバーの起動`python manage.py runserver`
 - アプリケーション作成`python manage.py startapp app_name`
-- モデルの定義
-- プロジェクトにアプリケーションを登録(モデルの有効化)
+- urls.pyにアプリケーションを追加`path('', include('app.urls')),`
+- settings.pyにアプリケーション登録`INSTALLED_APPS`
+- プロジェクトにアプリケーションを登録(モデルの有効化)``
 - モデルの定義
 - マイグレーションファイルを作成`python manage.py makemigrations cms`
 - データベースに反映`python manage.py migrate cms`
@@ -88,6 +79,10 @@ python manage.py runserver
 プロジェクト：特定のウェブサイト用に設定とアプリケーションをまとめたもの
 
 ##### プロジェクトとアプリケーションの関係
+アプリケーション作成
+```
+python manage.py startapp app_name
+```
 
 1つのプロジェクトに複数のアプリケーションを含めることができる
 1つのアプリケーションを複数の異なるプロジェクトで再利用できる
@@ -101,323 +96,6 @@ python manage.py runserver
 python manage.py runserver 8080
 └────┘ └───────┘ └──────┘ └──┘
 Python  管理スクリプト サーバー起動 ポート番号
-```
-
-## View
-```python
-Django Views チートシート
-
-関数ベースビュー（FBV）
-==================================================
-from .models import Post
-基本のビュー               → def index(request):
-                             return render(request, 'index.html')
-
-クエリセットを渡す         → def post_list(request):
-                             posts = Post.objects.all()
-                             return render(request, 'posts.html', {'posts': posts})
-                             # テンプレートでは {{ posts }} で使用可能
-
-パラメータ受け取り         → def post_detail(request, pk):
-                             post = get_object_or_404(Post, pk=pk)
-                             return render(request, 'detail.html', {'post': post})
-==================================================
-
-クエリセットの渡し方
-==================================================
-基本パターン               → def view_name(request):
-                             queryset = Model.objects.all()
-                             return render(request, 'template.html', {'変数名': queryset})
-                             # テンプレートで {{ 変数名 }} として使用
-
-複数のクエリセット         → def dashboard(request):
-                             posts = Post.objects.all()
-                             users = User.objects.all()
-                             return render(request, 'dashboard.html', {
-                                 'posts': posts,
-                                 'users': users
-                             })
-                             # テンプレートで {{ posts }} と {{ users }} が使用可能
-
-フィルター済みを渡す       → def published_posts(request):
-                             posts = Post.objects.filter(status='published')
-                             return render(request, 'posts.html', {'posts': posts})
-                             # テンプレートで {{ posts }} はpublishedのみ
-==================================================
-
-HTTPメソッドの処理
-==================================================
-GETとPOSTの分岐            → if request.method == 'POST':
-                             # フォーム処理
-                          else:
-                             # 表示処理
-
-POSTのみ許可               → @require_POST
-                          def delete_view(request):
-
-特定メソッドのみ           → @require_http_methods(['GET', 'POST'])
-==================================================
-
-よく使うレスポンス
-==================================================
-HTMLを返す                 → return render(request, 'template.html', context)
-リダイレクト               → return redirect('app:view_name')
-                          → return redirect('/some/url/')
-404エラー                  → raise Http404("メッセージ")
-                          → get_object_or_404(Model, pk=pk)
-JSONを返す                 → return JsonResponse({'key': 'value'})
-==================================================
-
-フォーム処理の基本パターン
-==================================================
-def create_view(request):
-   if request.method == 'POST':
-       form = MyForm(request.POST)
-       if form.is_valid():
-           form.save()
-           return redirect('success')
-   else:
-       form = MyForm()
-   return render(request, 'form.html', {'form': form})
-==================================================
-
-クラスベースビュー（CBV）
-==================================================
-一覧表示                   → class PostListView(ListView):
-                             model = Post
-                             template_name = 'post_list.html'
-                             context_object_name = 'posts'  # テンプレートで使う変数名
-
-詳細表示                   → class PostDetailView(DetailView):
-                             model = Post
-                             template_name = 'post_detail.html'
-                             # デフォルトでは {{ post }} として使用可能
-
-作成                       → class PostCreateView(CreateView):
-                             model = Post
-                             fields = ['title', 'content']
-                             success_url = reverse_lazy('post_list')
-
-更新                       → class PostUpdateView(UpdateView):
-                             model = Post
-                             fields = ['title', 'content']
-                             success_url = reverse_lazy('post_list')
-
-削除                       → class PostDeleteView(DeleteView):
-                             model = Post
-                             success_url = reverse_lazy('post_list')
-==================================================
-
-デコレータ
-==================================================
-ログイン必須               → @login_required
-                          def my_view(request):
-
-権限チェック               → @permission_required('app.add_post')
-キャッシュ                 → @cache_page(60 * 15)
-CSRF除外                   → @csrf_exempt
-==================================================
-
-便利な関数・クラス
-==================================================
-404取得                    → post = get_object_or_404(Post, pk=pk)
-リスト404                  → posts = get_list_or_404(Post, published=True)
-ページネーション           → from django.core.paginator import Paginator
-                          paginator = Paginator(queryset, 10)
-                          page = paginator.get_page(request.GET.get('page'))
-==================================================
-
-リクエストオブジェクト
-==================================================
-GETパラメータ              → request.GET.get('q')
-POSTデータ                 → request.POST.get('field_name')
-ファイル                   → request.FILES.get('file')
-ユーザー                   → request.user
-メソッド                   → request.method
-パス                       → request.path
-Ajax判定                   → request.is_ajax()
-==================================================
-
-実践例：クエリセットを活用したビュー
-==================================================
-def blog_index(request):
-   # 複数のクエリセットを準備
-   recent_posts = Post.objects.filter(status='published').order_by('-created_at')[:5]
-   popular_posts = Post.objects.filter(status='published').order_by('-view_count')[:5]
-   categories = Category.objects.annotate(post_count=Count('post'))
-   
-   # テンプレートに渡す
-   context = {
-       'recent_posts': recent_posts,      # {{ recent_posts }} で使用
-       'popular_posts': popular_posts,    # {{ popular_posts }} で使用
-       'categories': categories,          # {{ categories }} で使用
-       'total_posts': Post.objects.count()  # {{ total_posts }} で使用
-   }
-   
-   return render(request, 'blog/index.html', context)
-
-# テンプレート側では：
-# {% for post in recent_posts %}
-#     {{ post.title }}
-# {% endfor %}
-==================================================
-```
-views.py の仕事  
-- HTTPリクエストの処理
-- HTTPレスポンスの作成
-- HTTPステータスコード（404等）
-- Webに関する例外（Http404等）
-
-##### URLにアクセスした際の処理を記述
-```
-Viewの基本的な流れ：
-1. ユーザーがURLにアクセスする
-   例: http://localhost:8000/polls/
-   ↓
-2. DjangoがURLを解析
-   - プロジェクトのurls.py → アプリのurls.py
-   ↓
-3. urls.pyで対応するView関数を特定
-   path('', views.index) → index関数を使うと判断
-   ↓
-4. DjangoがView関数を呼び出す
-   views.index(request) を実行
-   ↓
-5. View関数が処理を実行
-   - データベースからデータ取得
-   - テンプレートにデータを渡す
-   - レスポンスを作成
-   ↓
-6. Viewがレスポンスを返す
-   return HttpResponse("Hello, world")
-   ↓
-7. ユーザーのブラウザに結果が表示される
-```
-
-##### viewを設定したらurls.pyを編集する
-アプリケーションを始めて追加した際は、プロジェクトのurls.pyにアプリケーションのurlを登録する
-ユーザーのアクセスしたurlが/app1/page1だった場合
-1. プロジェクトのurls.pyによりurlの確認が行われる
-2. /app1/から始まるurlだった場合、app1のurls.pyに処理を振り分ける
-3. app1のurls.pyで定義されたurlにより処理を実行する
-![イメージ図](./.drawio.png)
-
-
-[renderショートカット](https://docs.djangoproject.com/ja/2.0/intro/tutorial03/#a-shortcut-render)
-```
- order_by('-pub_date')
-```
-order_by : 並び替えの指定
-pub_date：公開日で並び替え
--（マイナス）：降順（新しい順）
-マイナスなし：昇順（古い順）
-
-##### [簡単なフォームを書く](https://docs.djangoproject.com/ja/2.0/intro/tutorial04/#write-a-simple-form)
-```python
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
-from django.urls import reverse
-
-from .models import Choice, Question
-# ...
-def vote(request, question_id):
-    # 処理：指定されたIDの質問を取得
-    # エラー時：質問が存在しない → 404エラーページ表示
-    question = get_object_or_404(Question, pk=question_id)
-    try:
-        # question.choice_setはDjangoによって自動的に作成され、Questionに関連づけられたChoice全てにアクセスできるようになる。
-        selected_choice = question.choice_set.get(pk=request.POST['choice'])
-    except (KeyError, Choice.DoesNotExist):
-        # Redisplay the question voting form.
-        return render(request, 'polls/detail.html', {
-            'question': question,
-            'error_message': "You didn't select a choice.",
-        })
-    else:
-        selected_choice.votes += 1
-        selected_choice.save()
-        # Always return an HttpResponseRedirect after successfully dealing
-        # with POST data. This prevents data from being posted twice if a
-        # user hits the Back button.
-        return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
-```
-
-## urls
-urlsファイルでは同じ階層のviews.pyをimportしていて、urlsで対応させたviewsの関数を実行する。urls->viewsの順番。
-```python
-Django URLs チートシート
-
-URLパターンの基本
-==================================================
-基本のURL                   → path('', views.index, name='index')
-詳細ページ                  → path('<int:pk>/', views.detail, name='detail')
-文字列パラメータ            → path('<str:slug>/', views.post, name='post')
-複数パラメータ              → path('<int:year>/<int:month>/', views.archive)
-任意のパス                  → path('<path:url>/', views.redirect_view)
-==================================================
-
-パスコンバータ
-==================================================
-整数                       → <int:id>
-文字列                     → <str:username>
-スラッグ                   → <slug:post_slug>
-UUID                       → <uuid:token>
-パス（/を含む）            → <path:file_path>
-==================================================
-
-よく使うURLパターン
-==================================================
-一覧                       → path('', views.post_list, name='post_list')
-詳細                       → path('<int:pk>/', views.post_detail, name='post_detail')
-作成                       → path('create/', views.post_create, name='post_create')
-編集                       → path('<int:pk>/edit/', views.post_edit, name='post_edit')
-削除                       → path('<int:pk>/delete/', views.post_delete, name='post_delete')
-==================================================
-
-include を使った分割
-==================================================
-アプリのURL読み込み         → path('blog/', include('blog.urls'))
-名前空間付き               → path('blog/', include('blog.urls', namespace='blog'))
-==================================================
-
-クラスベースビューのURL
-==================================================
-ListView                   → path('', PostListView.as_view(), name='post_list')
-DetailView                 → path('<int:pk>/', PostDetailView.as_view(), name='post_detail')
-CreateView                 → path('create/', PostCreateView.as_view(), name='post_create')
-UpdateView                 → path('<int:pk>/edit/', PostUpdateView.as_view(), name='post_edit')
-DeleteView                 → path('<int:pk>/delete/', PostDeleteView.as_view(), name='post_delete')
-==================================================
-
-正規表現を使う場合（re_path）
-==================================================
-4桁の年                    → re_path(r'^(?P<year>[0-9]{4})/$', views.year_archive)
-電話番号                   → re_path(r'^(?P<phone>\d{3}-\d{4}-\d{4})/$', views.phone)
-==================================================
-```
-
-## migrate
-```zsh
-python manage.py migrate
-```
-migrate コマンドはmysite/settings.py ファイルのデータベース設定に従って必要なすべてのデータベースのテーブルを作成します
-実行すると、以下のようなテーブルが自動的に作られます：
-```sql
-auth_user          -- ユーザー情報を保存
-auth_group         -- グループ情報を保存
-auth_permission    -- 権限情報を保存
-django_session     -- セッション情報を保存
-django_content_type -- コンテンツタイプ情報
-django_admin_log   -- 管理サイトのログ
-django_migrations  -- 実行済みマイグレーションの記録
-```
-```
-【auth_userテーブル(イメージ)】
-| ID | ユーザー名 | メール | パスワード | 登録日 |
-|----|----------|--------|-----------|---------|
-| 1  | tanaka   | t@mail | xxxxx     | 2024/1/1|
-| 2  | suzuki   | s@mail | yyyyy     | 2024/1/2|
-| 3  | sato     | sa@mail| zzzzz     | 2024/1/3|
 ```
 ## モデル
 ```
@@ -460,27 +138,9 @@ migrate後：定義されたモデルよりテーブル作成済み（カラム�
 
 モデルはクラスで定義する。クラスは「データ＋処理」をパッケージ化した再利用可能な設計図。これにより、同じ構造を持つ異なるデータを効率的に扱える。
 
-### modelの定義
+### modelの型指定
 ```python
 Django モデルフィールド チートシート
-
-要件                        → フィールド
-==================================================
-短いテキスト（〜255文字）     → CharField
-長いテキスト                → TextField
-整数                       → IntegerField
-正の整数                    → PositiveIntegerField
-小数（金額など）             → DecimalField
-真偽値                      → BooleanField
-日付                       → DateField
-日時                       → DateTimeField
-メール                      → EmailField
-URL                        → URLField
-画像                       → ImageField
-ファイル                    → FileField
-他モデルを1つ参照            → ForeignKey
-他モデルを複数参照           → ManyToManyField
-==================================================
 
 よく使う実装パターン
 ==================================================
@@ -548,6 +208,70 @@ AppConfigは「このアプリの名前は何で、どんな設定で動かす�
    - アプリの場所（pollsフォルダ）
    - マイグレーション対象になる
 ```
+
+## モデルの定義
+- models.Modelを継承したclassを定義して、その中でmodelsモジュールで定義されているclassでフィールドの型を指定する
+    - models.ModelはDjangoが提供するmodelsモジュールで定義されている基底クラス
+    - データベースの保存や、登録等の機能を備えている
+- objectはデータとデータを操作する関数が定義されたまとまり
+- 型 ≈ クラス ≈ オブジェクト（Pythonでは）
+- 「型」は概念的な話、「オブジェクト」は実装的な話
+- でも実際には同じものを違う角度から見ているだけ
+
+#### 例えば投稿に関するモデルであるPostモデルを作成する場合
+Post（投稿のモデル）といいねモデルの作成
+- id: 主キー
+- title: 投稿タイトル
+- content: 投稿本文（任意）
+- created_at: 投稿日時
+などを定義する。これらはエクセルでいうところの縦の列に相当する。
+```python
+
+class Post(models.Model):
+    # 投稿タイトル(100文字以内に制限)
+    title = models.CharField(max_length=100)
+
+    # 投稿本文
+    content = models.TextField()
+
+    # 投稿日時
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class Vote()
+    post = models.ForeignKey(
+        'Post',
+        on_delete=models.CASCADE,  # 投稿が削除されたら投票も削除
+    ),
+
+
+
+```
+
+
+## migrate
+```zsh
+python manage.py migrate
+```
+migrate コマンドはmysite/settings.py ファイルのデータベース設定に従って必要なすべてのデータベースのテーブルを作成します
+実行すると、以下のようなテーブルが自動的に作られます：
+```sql
+auth_user          -- ユーザー情報を保存
+auth_group         -- グループ情報を保存
+auth_permission    -- 権限情報を保存
+django_session     -- セッション情報を保存
+django_content_type -- コンテンツタイプ情報
+django_admin_log   -- 管理サイトのログ
+django_migrations  -- 実行済みマイグレーションの記録
+```
+```
+【auth_userテーブル(イメージ)】
+| ID | ユーザー名 | メール | パスワード | 登録日 |
+|----|----------|--------|-----------|---------|
+| 1  | tanaka   | t@mail | xxxxx     | 2024/1/1|
+| 2  | suzuki   | s@mail | yyyyy     | 2024/1/2|
+| 3  | sato     | sa@mail| zzzzz     | 2024/1/3|
+```
+
 ### 構成クラス（AppConfig）の構造
 ```python
 # polls/apps.py
@@ -668,12 +392,18 @@ Django Admin チートシート
 
 必須インポート
 ==================================================
-基本のインポート           → from django.contrib import admin
-                          from .models import Model
+基本のインポート           → 
+from django.contrib import admin
+from .models import Model
 
-フォーマット用             → from django.utils.html import format_html
-管理コマンド用             → from django.urls import path
-カスタムフォーム用         → from django import forms
+フォーマット用             → 
+from django.utils.html import format_html
+
+管理コマンド用             → 
+from django.urls import path
+
+カスタムフォーム用         → 
+from django import forms
 ==================================================
 
 基本の登録（最小構成）
@@ -951,6 +681,308 @@ admin.site.site_title = 'ブログ管理'
 admin.site.index_title = 'ダッシュボード'
 ==================================================
 ```
+Djangoには、パスワードをリセットするための安全なコマンドが用意されています。changepasswordという管理コマンドを使用します。
+
+
+
+## View
+```python
+Django Views チートシート
+
+from .models import Post
+
+関数ベースビュー（FBV）
+==================================================
+from .models import Post
+基本のビュー               → def index(request):
+                             return render(request, 'index.html')
+
+クエリセットを渡す         → def post_list(request):
+                             posts = Post.objects.all()
+                             return render(request, 'posts.html', {'posts': posts})
+                             # テンプレートでは {{ posts }} で使用可能
+
+パラメータ受け取り         → def post_detail(request, pk):
+                             post = get_object_or_404(Post, pk=pk)
+                             return render(request, 'detail.html', {'post': post})
+==================================================
+
+クエリセットの渡し方
+==================================================
+基本パターン               → def view_name(request):
+                             queryset = Model.objects.all()
+                             return render(request, 'template.html', {'変数名': queryset})
+                             # テンプレートで {{ 変数名 }} として使用
+
+複数のクエリセット         → def dashboard(request):
+                             posts = Post.objects.all()
+                             users = User.objects.all()
+                             return render(request, 'dashboard.html', {
+                                 'posts': posts,
+                                 'users': users
+                             })
+                             # テンプレートで {{ posts }} と {{ users }} が使用可能
+
+フィルター済みを渡す       → def published_posts(request):
+                             posts = Post.objects.filter(status='published')
+                             return render(request, 'posts.html', {'posts': posts})
+                             # テンプレートで {{ posts }} はpublishedのみ
+==================================================
+
+HTTPメソッドの処理
+==================================================
+GETとPOSTの分岐            → if request.method == 'POST':
+                             # フォーム処理
+                          else:
+                             # 表示処理
+
+POSTのみ許可               → @require_POST
+                          def delete_view(request):
+
+特定メソッドのみ           → @require_http_methods(['GET', 'POST'])
+==================================================
+
+よく使うレスポンス
+==================================================
+HTMLを返す                 → return render(request, 'template.html', context)
+リダイレクト               → return redirect('app:view_name')
+                          → return redirect('/some/url/')
+404エラー                  → raise Http404("メッセージ")
+                          → get_object_or_404(Model, pk=pk)
+JSONを返す                 → return JsonResponse({'key': 'value'})
+==================================================
+
+フォーム処理の基本パターン
+==================================================
+def create_view(request):
+   if request.method == 'POST':
+       form = MyForm(request.POST)
+       if form.is_valid():
+           form.save()
+           return redirect('success')
+   else:
+       form = MyForm()
+   return render(request, 'form.html', {'form': form})
+==================================================
+
+クラスベースビュー（CBV）
+==================================================
+一覧表示                   → class PostListView(ListView):
+                             model = Post
+                             template_name = 'post_list.html'
+                             context_object_name = 'posts'  # テンプレートで使う変数名
+
+詳細表示                   → class PostDetailView(DetailView):
+                             model = Post
+                             template_name = 'post_detail.html'
+                             # デフォルトでは {{ post }} として使用可能
+
+作成                       → class PostCreateView(CreateView):
+                             model = Post
+                             fields = ['title', 'content']
+                             success_url = reverse_lazy('post_list')
+
+更新                       → class PostUpdateView(UpdateView):
+                             model = Post
+                             fields = ['title', 'content']
+                             success_url = reverse_lazy('post_list')
+
+削除                       → class PostDeleteView(DeleteView):
+                             model = Post
+                             success_url = reverse_lazy('post_list')
+==================================================
+
+デコレータ
+==================================================
+ログイン必須               → @login_required
+                          def my_view(request):
+
+権限チェック               → @permission_required('app.add_post')
+キャッシュ                 → @cache_page(60 * 15)
+CSRF除外                   → @csrf_exempt
+==================================================
+
+便利な関数・クラス
+==================================================
+404取得                    → post = get_object_or_404(Post, pk=pk)
+リスト404                  → posts = get_list_or_404(Post, published=True)
+ページネーション           → from django.core.paginator import Paginator
+                          paginator = Paginator(queryset, 10)
+                          page = paginator.get_page(request.GET.get('page'))
+==================================================
+
+リクエストオブジェクト
+==================================================
+GETパラメータ              → request.GET.get('q')
+POSTデータ                 → request.POST.get('field_name')
+ファイル                   → request.FILES.get('file')
+ユーザー                   → request.user
+メソッド                   → request.method
+パス                       → request.path
+Ajax判定                   → request.is_ajax()
+==================================================
+
+実践例：クエリセットを活用したビュー
+==================================================
+def blog_index(request):
+   # 複数のクエリセットを準備
+   recent_posts = Post.objects.filter(status='published').order_by('-created_at')[:5]
+   popular_posts = Post.objects.filter(status='published').order_by('-view_count')[:5]
+   categories = Category.objects.annotate(post_count=Count('post'))
+   
+   # テンプレートに渡す
+   context = {
+       'recent_posts': recent_posts,      # {{ recent_posts }} で使用
+       'popular_posts': popular_posts,    # {{ popular_posts }} で使用
+       'categories': categories,          # {{ categories }} で使用
+       'total_posts': Post.objects.count()  # {{ total_posts }} で使用
+   }
+   
+   return render(request, 'blog/index.html', context)
+
+# テンプレート側では：
+# {% for post in recent_posts %}
+#     {{ post.title }}
+# {% endfor %}
+==================================================
+```
+views.py の仕事  
+- HTTPリクエストの処理
+- HTTPレスポンスの作成
+- HTTPステータスコード（404等）
+- Webに関する例外（Http404等）
+
+##### URLにアクセスした際の処理を記述
+```
+Viewの基本的な流れ：
+1. ユーザーがURLにアクセスする
+   例: http://localhost:8000/polls/
+   ↓
+2. DjangoがURLを解析
+   - プロジェクトのurls.py → アプリのurls.py
+   ↓
+3. urls.pyで対応するView関数を特定
+   path('', views.index) → index関数を使うと判断
+   ↓
+4. DjangoがView関数を呼び出す
+   views.index(request) を実行
+   ↓
+5. View関数が処理を実行
+   - データベースからデータ取得
+   - テンプレートにデータを渡す
+   - レスポンスを作成
+   ↓
+6. Viewがレスポンスを返す
+   return HttpResponse("Hello, world")
+   ↓
+7. ユーザーのブラウザに結果が表示される
+```
+
+##### viewを設定したらurls.pyを編集する
+アプリケーションを始めて追加した際は、プロジェクトのurls.pyにアプリケーションのurlを登録する
+ユーザーのアクセスしたurlが/app1/page1だった場合
+1. プロジェクトのurls.pyによりurlの確認が行われる
+2. /app1/から始まるurlだった場合、app1のurls.pyに処理を振り分ける
+3. app1のurls.pyで定義されたurlにより処理を実行する
+![イメージ図](./.drawio.png)
+
+
+[renderショートカット](https://docs.djangoproject.com/ja/2.0/intro/tutorial03/#a-shortcut-render)
+```
+ order_by('-pub_date')
+```
+order_by : 並び替えの指定
+pub_date：公開日で並び替え
+-（マイナス）：降順（新しい順）
+マイナスなし：昇順（古い順）
+
+##### [簡単なフォームを書く](https://docs.djangoproject.com/ja/2.0/intro/tutorial04/#write-a-simple-form)
+```python
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
+
+from .models import Choice, Question
+# ...
+def vote(request, question_id):
+    # 処理：指定されたIDの質問を取得
+    # エラー時：質問が存在しない → 404エラーページ表示
+    question = get_object_or_404(Question, pk=question_id)
+    try:
+        # question.choice_setはDjangoによって自動的に作成され、Questionに関連づけられたChoice全てにアクセスできるようになる。
+        selected_choice = question.choice_set.get(pk=request.POST['choice'])
+    except (KeyError, Choice.DoesNotExist):
+        # Redisplay the question voting form.
+        return render(request, 'polls/detail.html', {
+            'question': question,
+            'error_message': "You didn't select a choice.",
+        })
+    else:
+        selected_choice.votes += 1
+        selected_choice.save()
+        # Always return an HttpResponseRedirect after successfully dealing
+        # with POST data. This prevents data from being posted twice if a
+        # user hits the Back button.
+        return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+```
+
+## urls
+urlsファイルでは同じ階層のviews.pyをimportしていて、urlsで対応させたviewsの関数を実行する。urls->viewsの順番。
+```python
+Django URLs チートシート
+
+URLパターンの基本
+==================================================
+from django.urls import path
+from . import views
+
+基本のURL                   → path('', views.index, name='index')
+詳細ページ                  → path('<int:pk>/', views.detail, name='detail')
+文字列パラメータ            → path('<str:slug>/', views.post, name='post')
+複数パラメータ              → path('<int:year>/<int:month>/', views.archive)
+任意のパス                  → path('<path:url>/', views.redirect_view)
+==================================================
+
+include を使った分割
+==================================================
+アプリのURL読み込み         → path('blog/', include('blog.urls'))
+名前空間付き               → path('blog/', include('blog.urls', namespace='blog'))
+==================================================
+
+パスコンバータ
+==================================================
+整数                       → <int:id>
+文字列                     → <str:username>
+スラッグ                   → <slug:post_slug>
+UUID                       → <uuid:token>
+パス（/を含む）            → <path:file_path>
+==================================================
+
+よく使うURLパターン
+==================================================
+一覧                       → path('', views.post_list, name='post_list')
+詳細                       → path('<int:pk>/', views.post_detail, name='post_detail')
+作成                       → path('create/', views.post_create, name='post_create')
+編集                       → path('<int:pk>/edit/', views.post_edit, name='post_edit')
+削除                       → path('<int:pk>/delete/', views.post_delete, name='post_delete')
+==================================================
+
+クラスベースビューのURL
+==================================================
+ListView                   → path('', PostListView.as_view(), name='post_list')
+DetailView                 → path('<int:pk>/', PostDetailView.as_view(), name='post_detail')
+CreateView                 → path('create/', PostCreateView.as_view(), name='post_create')
+UpdateView                 → path('<int:pk>/edit/', PostUpdateView.as_view(), name='post_edit')
+DeleteView                 → path('<int:pk>/delete/', PostDeleteView.as_view(), name='post_delete')
+==================================================
+
+正規表現を使う場合（re_path）
+==================================================
+4桁の年                    → re_path(r'^(?P<year>[0-9]{4})/$', views.year_archive)
+電話番号                   → re_path(r'^(?P<phone>\d{3}-\d{4}-\d{4})/$', views.phone)
+==================================================
+```
+
 
 ##### [汎用ビューを使う](https://docs.djangoproject.com/ja/2.0/intro/tutorial04/#use-generic-views-less-code-is-better)
 
