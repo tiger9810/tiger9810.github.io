@@ -1,3 +1,8 @@
+<!--
+title = "Macro Tracker - Handy Portions Privacy Policy"
+date = "2025-07-19"
+-->
+
 **Privacy Policy**
 
 This privacy policy applies to the Macro Tracker - Handy Portions app (hereby referred to as "Application") for mobile devices that was created by tiger98 (hereby referred to as "Service Provider") as a Free service. This service is intended for use "AS IS".
