@@ -5,8 +5,8 @@ page = true
 template = "index"
 -->
 
-Semiconductor Engineer
+Normal Engineer
 
 - GitHub: [github.com/tiger9810](http://github.com/tiger9810)
 - X: [@taiga98](https://x.com/taiga98)
-- instagram: [@tiger98kkk](https://www.instagram.com/tiger98kkk/)
+- 質問、連絡はXのDMかマシュマロまで：[マシュマロ](https://marshmallow-qa.com/evyxtusuhlr7fuc?t=jeLUm6&utm_medium=url_text&utm_source=promotion)

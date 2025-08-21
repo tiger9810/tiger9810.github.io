@@ -28,11 +28,12 @@ Level1のLesson20まで完了した状態では、1級のレベルチェック�
 この時点で受験した2級は問題文から意味わからなくて当てずっぽうで解答(56点)。
 ![level1のlesson20まで完了させた際の結果](./Level1_Lesson20_result_of_level1test.png)
 
-### pimsleur level1 Lesson３0まで完了した際の結果
+### pimsleur level1 Lesson30まで完了した際の結果
+
 
 ---
 <details><summary>履歴</summary>
 
-- [0000-00-00 Fri] 
+- [2025-08-21 Thu] level2のLesson15まで完了
 
 </details>
