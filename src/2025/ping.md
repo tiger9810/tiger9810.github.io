@@ -32,7 +32,7 @@ https://uptimerobot.com/ にアクセスして、アカウントを作成しま�
 |------|----------|
 | Monitor Type | HTTP / website monitoring を選択 |
 | Friendly Name | LINE Bot Health Check |
-| URL | https://yourURL.onrender.com/ |
+| URL | https://yourURL.onrender.com/health |
 | Monitoring Interval | 5 minutes |
 
 3. 「Create Monitor」をクリック
