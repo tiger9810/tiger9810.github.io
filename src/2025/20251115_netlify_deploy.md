@@ -203,6 +203,36 @@ git push -u origin main
    - **Publish directory**: `out`
 7. 「Deploy site」をクリック
 
+Base directoryは空欄のままでOKです。
+Base directoryとは何か
+Base directoryは、Netlifyがビルドコマンド（npm run buildなど）を実行する際の「作業ディレクトリ」を指定する設定です。
+通常のNext.jsプロジェクトの場合
+あなたのプロジェクト（click-counter）は通常のNext.jsプロジェクトなので、Base directoryは空欄にしてください。
+なぜ空欄でいいのか？
+
+GitHubリポジトリのルート（最上位階層）にpackage.jsonがある
+プロジェクトがサブディレクトリに分かれていない
+Netlifyはリポジトリのルートからビルドコマンドを実行すれば良い
+
+Base directoryを設定する必要があるケース
+以下のような特殊な構成の場合のみ、Base directoryの設定が必要です：
+ケース1: モノレポ構成
+my-repo/
+├── apps/
+│   ├── web/          ← Next.jsアプリがここにある
+│   │   ├── package.json
+│   │   └── next.config.ts
+│   └── mobile/
+└── package.json
+この場合、Base directoryに apps/web と入力します。
+ケース2: プロジェクトがサブディレクトリにある
+my-repo/
+├── docs/
+├── frontend/         ← Next.jsアプリがここにある
+│   ├── package.json
+│   └── next.config.ts
+└── README.md
+この場合、Base directoryに frontend と入力します。
 デプロイが開始されます。1〜2分で完了し、URLが表示されます。
 
 ### A-5. 自動デプロイの仕組み
